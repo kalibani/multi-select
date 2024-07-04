@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import classNames from "classnames";
 import { Option } from "../../types/Option";
 
-interface MultiSelectProps {
+export interface CustomSelectProps {
   options: Option[];
   isMultiple?: boolean;
   onChange: (selected: Option | Option[]) => void;
@@ -13,7 +13,7 @@ interface MultiSelectProps {
   zIndex?: number;
 }
 
-const MultiSelect: React.FC<MultiSelectProps> = ({
+const CustomSelect: React.FC<CustomSelectProps> = ({
   options,
   isMultiple = true,
   onChange,
@@ -66,19 +66,16 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     return (
       <div
         key={option.value}
-        className={classNames("cursor-pointer px-4 py-2", {
-          "bg-blue-500 text-white": isSelected,
-          "bg-white text-black": !isSelected,
-          "bg-yellow-100":
-            // @ts-ignore
-            highlightedIndex !== null && highlightedIndex === option.value,
+        className={classNames("cursor-pointer px-4 py-2 hover:bg-teal-100", {
+          "bg-teal-100 text-gray-700": isSelected,
+          "bg-white text-gray-700": !isSelected,
         })}
         onClick={() => handleOptionClick(option)}
       >
         {matchStartIndex > -1 ? (
           <>
             {option.label.slice(0, matchStartIndex)}
-            <span className="text-red-500">
+            <span className=" bg-teal-500">
               {option.label.slice(matchStartIndex, matchEndIndex)}
             </span>
             {option.label.slice(matchEndIndex)}
@@ -162,7 +159,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const dropdownMenu = (
     <div
       className={classNames(
-        "absolute w-full bg-white border border-gray-300 rounded shadow-lg ml-4",
+        "absolute w-full bg-white border border-gray-300 rounded shadow-lg mt-1",
         { "z-50": zIndex === 50, "z-100": zIndex === 100 }
       )}
       style={{ zIndex, width: dropdownRef.current?.offsetWidth }} // Set the width dynamically
@@ -199,29 +196,32 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   );
 
   return (
-    <div className="relative w-full" ref={dropdownRef}>
-      <div
-        className="border border-gray-300 rounded px-4 py-2 cursor-pointer"
-        onClick={handleToggle}
-      >
-        {selectedOptions.length === 0
-          ? "Select..."
-          : selectedOptions.map((opt) => (
-              <span
-                key={opt.value}
-                className="inline-block bg-gray-200 rounded-full px-2 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2 cursor-pointer"
-                onClick={() => handleRemoveOption(opt)}
-              >
-                {opt.label}
-              </span>
-            ))}
+    <div className="flex items-center max-h-max gap-4">
+      <label>Label</label>
+      <div className="relative w-full" ref={dropdownRef}>
+        <div
+          className="border border-gray-300 rounded px-4 py-2 cursor-pointer"
+          onClick={handleToggle}
+        >
+          {selectedOptions.length === 0
+            ? "Select..."
+            : selectedOptions.map((opt) => (
+                <span
+                  key={opt.value}
+                  className="inline-block bg-gray-200 rounded-full px-2 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2 cursor-pointer"
+                  onClick={() => handleRemoveOption(opt)}
+                >
+                  {opt.label}
+                </span>
+              ))}
+        </div>
+        {isOpen &&
+          (portal
+            ? ReactDOM.createPortal(dropdownMenu, document.body)
+            : dropdownMenu)}
       </div>
-      {isOpen &&
-        (portal
-          ? ReactDOM.createPortal(dropdownMenu, document.body)
-          : dropdownMenu)}
     </div>
   );
 };
 
-export default MultiSelect;
+export default CustomSelect;

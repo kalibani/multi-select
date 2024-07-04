@@ -1,5 +1,5 @@
 import React from "react";
-import MultiSelect from "./components/UI/select";
+import MultiSelect from "./components/UI/CustomSelect";
 import { Option } from "./types/Option";
 
 const options: Option[] = [
