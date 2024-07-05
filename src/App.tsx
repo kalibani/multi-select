@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import Select from "./components/UI/Select";
 import { Option } from "./types/Option";
 
@@ -12,7 +12,7 @@ const options: Option[] = [
   { value: "7", label: "long long long long long long option 7" },
 ];
 
-const App: React.FC = () => {
+const App: FC = () => {
   const handleMultiSelectChange = (selected: Option | Option[]) => {
     console.log("Selected:", selected);
   };

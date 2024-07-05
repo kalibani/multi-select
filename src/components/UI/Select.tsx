@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, FC, ReactNode, ChangeEvent } from "react";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
 
@@ -6,18 +6,18 @@ import { ChevronDown, CircleX, Search } from "lucide-react";
 
 import { Option } from "@/types/Option";
 
-export interface SelectProps {
+interface SelectProps {
   options: Option[];
   multiple?: boolean;
   onChange: (selected: Option | Option[]) => void;
   portal?: boolean;
-  renderOption?: (option: Option, isSelected: boolean) => React.ReactNode;
+  renderOption?: (option: Option, isSelected: boolean) => ReactNode;
   withSearch?: boolean;
   zIndex?: number;
   outlined?: boolean;
 }
 
-const Select: React.FC<SelectProps> = ({
+const Select: FC<SelectProps> = ({
   options,
   multiple = true,
   onChange,
@@ -30,7 +30,7 @@ const Select: React.FC<SelectProps> = ({
   const [isOpen, setIsOpen] = useState(false); // State to track if the dropdown is open
   const [searchTerm, setSearchTerm] = useState(""); // State to track the search input
   const [selectedOptions, setSelectedOptions] = useState<Option[]>([]); // State to track selected options
-  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null); // State to track the highlighted option index
+
   const dropdownRef = useRef<HTMLDivElement>(null); // Ref for the dropdown container
   const dropdownMenuRef = useRef<HTMLDivElement>(null); // Ref for the dropdown menu
 
@@ -90,7 +90,7 @@ const Select: React.FC<SelectProps> = ({
   };
 
   // Function to handle changes in the search input
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
@@ -124,49 +124,11 @@ const Select: React.FC<SelectProps> = ({
     };
   }, []);
 
-  // Ensuring the highlighted option is in view when navigating with keyboard
-  useEffect(() => {
-    if (highlightedIndex !== null && options.length > 0) {
-      const optionElement = document.getElementById(
-        `option-${highlightedIndex}`
-      );
-      if (optionElement) {
-        optionElement.scrollIntoView({ block: "nearest" });
-      }
-    }
-  }, [highlightedIndex, options]);
-
   // To reset selected option whenever single/multiple switched
   useEffect(() => {
     setSelectedOptions([]);
     onChange([]);
   }, [onChange, multiple]);
-
-  // Function to handle keyboard navigation in the dropdown
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev === null || prev === options.length - 1 ? 0 : prev + 1
-        );
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev === null || prev === 0 ? options.length - 1 : prev - 1
-        );
-        break;
-      case "Enter":
-        e.preventDefault();
-        if (highlightedIndex !== null) {
-          handleOptionClick(options[highlightedIndex]);
-        }
-        break;
-      default:
-        break;
-    }
-  };
 
   // Dropdown menu element, rendered either directly or via a portal
   const dropdownMenu = (
@@ -193,7 +155,6 @@ const Select: React.FC<SelectProps> = ({
             className="w-full px-12 py-2 border-b border-gray-300 outline-none text-gray-500"
             value={searchTerm}
             onChange={handleSearchChange}
-            onKeyDown={handleKeyDown}
           />
           {searchTerm && (
             <CircleX
@@ -204,7 +165,7 @@ const Select: React.FC<SelectProps> = ({
         </>
       )}
       <div className="max-h-60 overflow-y-auto">
-        {options.map((option, index) =>
+        {options.map((option) =>
           renderOption
             ? renderOption(
                 option,
