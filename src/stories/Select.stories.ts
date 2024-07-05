@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react";
-import Select from "@/components/UI/Select";
-import { Option } from "@/types/Option";
+import Select from "../components/UI/Select";
+import { Option } from "../types/Option";
 
 const options: Option[] = [
   { value: "1", label: "Option 1" },
@@ -9,17 +9,24 @@ const options: Option[] = [
   { value: "4", label: "long long long long option 4" },
   { value: "5", label: "long long long long long option 5" },
   { value: "6", label: "long long long long long long option 6" },
+  { value: "7", label: "long long long long long long option 7" },
 ];
 
 const meta = {
   title: "Components/Select",
   component: Select,
   argTypes: {
-    isMultiple: { control: "boolean" },
-    searchable: { control: "boolean" },
+    options: {
+      control: {
+        type: "object",
+      },
+    },
+    multiple: { control: "boolean" },
+    withSearch: { control: "boolean" },
     portal: { control: "boolean" },
     zIndex: { control: { type: "number", min: 0, max: 2000 } },
-    onChange: { action: "changed" }, // Use Storybook's action to log changes
+    onChange: { action: "changed" },
+    outlined: { control: "boolean" },
   },
 } satisfies Meta<typeof Select>;
 
@@ -29,11 +36,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
+    options,
+    multiple: true,
     onChange: () => {},
-    options: options,
-    isMultiple: true,
-    searchable: true,
+    withSearch: true,
     portal: false,
+    outlined: false,
     zIndex: 100,
   },
 };

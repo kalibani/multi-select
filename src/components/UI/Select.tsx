@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom";
+import { createPortal } from "react-dom";
 import classNames from "classnames";
 
 import { ChevronDown, CircleX, Search } from "lucide-react";
@@ -8,22 +8,24 @@ import { Option } from "@/types/Option";
 
 export interface SelectProps {
   options: Option[];
-  isMultiple?: boolean;
+  multiple?: boolean;
   onChange: (selected: Option | Option[]) => void;
   portal?: boolean;
   renderOption?: (option: Option, isSelected: boolean) => React.ReactNode;
-  searchable?: boolean;
+  withSearch?: boolean;
   zIndex?: number;
+  outlined?: boolean;
 }
 
 const Select: React.FC<SelectProps> = ({
   options,
-  isMultiple = true,
+  multiple = true,
   onChange,
   portal = false,
   renderOption,
-  searchable = true,
+  withSearch = true,
   zIndex = 50,
+  outlined = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false); // State to track if the dropdown is open
   const [searchTerm, setSearchTerm] = useState(""); // State to track the search input
@@ -34,7 +36,7 @@ const Select: React.FC<SelectProps> = ({
 
   // Function to handle the selection and deselection of options
   const handleOptionClick = (option: Option) => {
-    if (isMultiple) {
+    if (multiple) {
       const isSelected = selectedOptions.some(
         (selected) => selected.value === option.value
       );
@@ -61,11 +63,7 @@ const Select: React.FC<SelectProps> = ({
 
   // Default function to render an option with search term highlighting
   const renderDefaultOption = (option: Option, isSelected: boolean) => {
-    const matchStartIndex = option.label
-      .toLowerCase()
-      .indexOf(searchTerm.toLowerCase());
-    const matchEndIndex = matchStartIndex + searchTerm.length;
-
+    const parts = option.label.split(new RegExp(`(${searchTerm})`, "gi"));
     return (
       <div
         key={option.value}
@@ -78,16 +76,14 @@ const Select: React.FC<SelectProps> = ({
         )}
         onClick={() => handleOptionClick(option)}
       >
-        {matchStartIndex > -1 ? (
-          <>
-            {option.label.slice(0, matchStartIndex)}
-            <span className="bg-teal-400">
-              {option.label.slice(matchStartIndex, matchEndIndex)}
+        {parts.map((part, index) =>
+          part.toLowerCase() === searchTerm.toLowerCase() ? (
+            <span key={index} className="bg-teal-400">
+              {part}
             </span>
-            {option.label.slice(matchEndIndex)}
-          </>
-        ) : (
-          option.label
+          ) : (
+            part
+          )
         )}
       </div>
     );
@@ -140,6 +136,12 @@ const Select: React.FC<SelectProps> = ({
     }
   }, [highlightedIndex, options]);
 
+  // To reset selected option whenever single/multiple switched
+  useEffect(() => {
+    setSelectedOptions([]);
+    onChange([]);
+  }, [multiple]);
+
   // Function to handle keyboard navigation in the dropdown
   const handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
@@ -171,12 +173,19 @@ const Select: React.FC<SelectProps> = ({
     <div
       className={classNames(
         "absolute w-full bg-white border border-gray-300 rounded-sm shadow-lg mt-1.5",
-        { "z-50": zIndex === 50, "z-100": zIndex === 100 }
+        {
+          "z-50": zIndex === 50,
+          "z-100": zIndex === 100,
+        }
       )}
-      style={{ zIndex, width: dropdownRef.current?.offsetWidth }} // Set the width dynamically
+      style={{
+        zIndex,
+        width: dropdownRef.current?.offsetWidth, // Set the width dynamically
+        left: portal ? dropdownRef.current?.offsetLeft : 0, // Set left dynamically
+      }}
       ref={dropdownMenuRef}
     >
-      {searchable && (
+      {withSearch && (
         <>
           <Search className="absolute h-4 w-4 top-3 left-4 text-gray-400" />
           <input
@@ -186,10 +195,12 @@ const Select: React.FC<SelectProps> = ({
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
           />
-          <CircleX
-            className="absolute h-4 w-4 top-3 right-4 text-gray-500 cursor-pointer"
-            onClick={handleRemoveSearch}
-          />
+          {searchTerm && (
+            <CircleX
+              className="absolute h-4 w-4 top-3 right-4 text-gray-500 cursor-pointer"
+              onClick={handleRemoveSearch}
+            />
+          )}
         </>
       )}
       <div className="max-h-60 overflow-y-auto">
@@ -217,10 +228,15 @@ const Select: React.FC<SelectProps> = ({
       <label className="mr-4 lg:mr-20 text-gray-700">Label</label>
       <div className="relative w-full" ref={dropdownRef}>
         <div
-          className="relative border border-gray-300 rounded p-2 cursor-pointer h-10 "
+          className={classNames(
+            "relative border border-gray-300 rounded p-2 cursor-pointer h-10",
+            {
+              "bg-gray-300": outlined,
+            }
+          )}
           onClick={handleToggle}
         >
-          <div className="flex gap-1 max-w-screen-sm lg:max-w-[940px] overflow-auto no-scrollbar">
+          <div className="flex gap-1 max-w-[300px] md:max-w-[980px] overflow-auto no-scrollbar">
             {selectedOptions.length === 0
               ? ""
               : selectedOptions.map((opt) => (
@@ -238,9 +254,7 @@ const Select: React.FC<SelectProps> = ({
           <ChevronDown className="h-4 w-4 absolute right-2 top-3 text-gray-500" />
         </div>
         {isOpen &&
-          (portal
-            ? ReactDOM.createPortal(dropdownMenu, document.body)
-            : dropdownMenu)}
+          (portal ? createPortal(dropdownMenu, document.body) : dropdownMenu)}
       </div>
     </div>
   );
