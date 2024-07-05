@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import classNames from "classnames";
-import { Option } from "../../types/Option";
 
-export interface CustomSelectProps {
+import { ChevronDown, CircleX, Search } from "lucide-react";
+
+import { Option } from "@/types/Option";
+
+export interface SelectProps {
   options: Option[];
   isMultiple?: boolean;
   onChange: (selected: Option | Option[]) => void;
@@ -13,7 +16,7 @@ export interface CustomSelectProps {
   zIndex?: number;
 }
 
-const CustomSelect: React.FC<CustomSelectProps> = ({
+const Select: React.FC<SelectProps> = ({
   options,
   isMultiple = true,
   onChange,
@@ -66,16 +69,19 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     return (
       <div
         key={option.value}
-        className={classNames("cursor-pointer px-4 py-2 hover:bg-teal-100", {
-          "bg-teal-100 text-gray-700": isSelected,
-          "bg-white text-gray-700": !isSelected,
-        })}
+        className={classNames(
+          "cursor-pointer px-4 py-2 hover:bg-teal-50 text-gray-500",
+          {
+            "bg-teal-50": isSelected,
+            "bg-white": !isSelected,
+          }
+        )}
         onClick={() => handleOptionClick(option)}
       >
         {matchStartIndex > -1 ? (
           <>
             {option.label.slice(0, matchStartIndex)}
-            <span className=" bg-teal-500">
+            <span className="bg-teal-400">
               {option.label.slice(matchStartIndex, matchEndIndex)}
             </span>
             {option.label.slice(matchEndIndex)}
@@ -90,6 +96,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   // Function to handle changes in the search input
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+
+  // Function to handle search removal
+  const handleRemoveSearch = () => {
+    setSearchTerm("");
   };
 
   // Function to toggle the dropdown open or closed
@@ -159,21 +170,27 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const dropdownMenu = (
     <div
       className={classNames(
-        "absolute w-full bg-white border border-gray-300 rounded shadow-lg mt-1",
+        "absolute w-full bg-white border border-gray-300 rounded-sm shadow-lg mt-1.5",
         { "z-50": zIndex === 50, "z-100": zIndex === 100 }
       )}
       style={{ zIndex, width: dropdownRef.current?.offsetWidth }} // Set the width dynamically
       ref={dropdownMenuRef}
     >
       {searchable && (
-        <input
-          type="text"
-          className="w-full px-4 py-2 border-b border-gray-300"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          onKeyDown={handleKeyDown}
-        />
+        <>
+          <Search className="absolute h-4 w-4 top-3 left-4 text-gray-400" />
+          <input
+            type="text"
+            className="w-full px-12 py-2 border-b border-gray-300 outline-none text-gray-500"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onKeyDown={handleKeyDown}
+          />
+          <CircleX
+            className="absolute h-4 w-4 top-3 right-4 text-gray-500 cursor-pointer"
+            onClick={handleRemoveSearch}
+          />
+        </>
       )}
       <div className="max-h-60 overflow-y-auto">
         {options.map((option, index) =>
@@ -196,24 +213,29 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   );
 
   return (
-    <div className="flex items-center max-h-max gap-4">
-      <label>Label</label>
+    <div className="flex items-center max-h-max">
+      <label className="mr-4 lg:mr-20 text-gray-700">Label</label>
       <div className="relative w-full" ref={dropdownRef}>
         <div
-          className="border border-gray-300 rounded px-4 py-2 cursor-pointer"
+          className="relative border border-gray-300 rounded p-2 cursor-pointer h-10 "
           onClick={handleToggle}
         >
-          {selectedOptions.length === 0
-            ? "Select..."
-            : selectedOptions.map((opt) => (
-                <span
-                  key={opt.value}
-                  className="inline-block bg-gray-200 rounded-full px-2 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2 cursor-pointer"
-                  onClick={() => handleRemoveOption(opt)}
-                >
-                  {opt.label}
-                </span>
-              ))}
+          <div className="flex gap-1 max-w-screen-sm lg:max-w-[940px] overflow-auto no-scrollbar">
+            {selectedOptions.length === 0
+              ? ""
+              : selectedOptions.map((opt) => (
+                  <span
+                    key={opt.value}
+                    className="flex bg-gray-100 rounded-full p-2 text-xs font-semibold text-gray-500 cursor-pointer gap-1 items-center h-6"
+                    onClick={() => handleRemoveOption(opt)}
+                  >
+                    <span className="w-max">{opt.label}</span>
+
+                    <CircleX className="w-4 h-4 text-gray-500" />
+                  </span>
+                ))}
+          </div>
+          <ChevronDown className="h-4 w-4 absolute right-2 top-3 text-gray-500" />
         </div>
         {isOpen &&
           (portal
@@ -224,4 +246,4 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   );
 };
 
-export default CustomSelect;
+export default Select;
