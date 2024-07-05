@@ -140,7 +140,7 @@ const Select: React.FC<SelectProps> = ({
   useEffect(() => {
     setSelectedOptions([]);
     onChange([]);
-  }, [multiple]);
+  }, [onChange, multiple]);
 
   // Function to handle keyboard navigation in the dropdown
   const handleKeyDown = (e: React.KeyboardEvent) => {
