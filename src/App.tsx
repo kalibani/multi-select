@@ -1,6 +1,8 @@
 import { FC } from "react";
-import Select from "./components/UI/Select";
-import { Option } from "./types/Option";
+
+import { Select, Option } from "makyo-multi-select";
+
+import "makyo-multi-select/dist/style.css";
 
 const options: Option[] = [
   { value: "1", label: "Option 1" },
